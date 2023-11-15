@@ -1,38 +1,48 @@
+# On the 96th line, there's a variable for the image path,
+# that needs to be updated to a local image path for it to function properly.
+
+
 import os
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from PIL import Image
 import io
-import base64
+
 
 # Generate a random key
 def generate_key():
     return os.urandom(16)
 
-# Encrypt using AES-128 in counter mode
+
+# Encrypt using AES-128
 def encrypt(key, plaintext):
     iv = os.urandom(16)
+    print(iv)
     cipher = Cipher(algorithms.AES(key), modes.CTR(iv), backend=default_backend())
     encryptor = cipher.encryptor()
     ciphertext = encryptor.update(plaintext) + encryptor.finalize()
     return (iv, ciphertext)
 
-# Image to Bytes
+
+#  this function reads an image file, loads it into memory,
+#  converts it into bytes, and returns the bytes representation of the image.
 def image_to_bytes(image_path):
     with Image.open(image_path) as img:
         with io.BytesIO() as byte_arr:
             img.save(byte_arr, format=img.format)
             return byte_arr.getvalue()
 
-# Bytes to Image
+
+# convert Bytes to back in Image
 def bytes_to_image(byte_data, output_path):
     with open(output_path, 'wb') as f:
         f.write(byte_data)
 
+
 # Placeholder function for compute_cover_set
-def compute_cover_set(non_revoked_devices, total_devices):
-    # Placeholder logic - here you'd implement the actual computation
-    return list(non_revoked_devices)[:2]  # Just an example, returns first two devices
+def compute_cover_set(non_revoked_devices):
+    return list(non_revoked_devices)[:2]  # returns first two devices
+
 
 # Encrypt content based on the revoked devices
 def encrypt_with_revocation(image_path, revoked_devices, total_devices):
@@ -61,6 +71,7 @@ def encrypt_with_revocation(image_path, revoked_devices, total_devices):
         "encrypted_keys_for_cover_set": encrypted_keys
     }
 
+
 # Decrypt the encrypted image
 def decrypt_image(encrypted_data, output_path):
     root_key = generate_key()
@@ -71,15 +82,17 @@ def decrypt_image(encrypted_data, output_path):
     # Save the decrypted image
     bytes_to_image(decrypted_image, output_path)
 
-# Decrypt using AES-128 in counter mode
+
+# Decrypt using AES-128
 def decrypt(key, iv, ciphertext):
     cipher = Cipher(algorithms.AES(key), modes.CTR(iv), backend=default_backend())
     decryptor = cipher.decryptor()
     plaintext = decryptor.update(ciphertext) + decryptor.finalize()
     return plaintext
 
+
 # Example usage
-image_path = '/Users/nikagongadze/Documents/Projects/Gaxs_VehicleDet/Gaxs_VehicleDet/wwwroot/img/Baros.jpg'  # Replace with your image path
+image_path = '/Users/klaraminga/Documents/Baros.jpg'  # image path
 output_path = 'decrypted_image.jpg'
 revoked_devices = {3, 7}  # Devices to revoke
 total_devices = 8  # Total number of devices
